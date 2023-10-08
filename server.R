@@ -13,13 +13,14 @@ require(waiter)
 require(ggtext)
 require(gt)
 
+### Prerequisites
+dat <- readRDS("data/megafile.rds")
+map_data <- readRDS("data/megafile_geo.rds")
+my_map <- readRDS("data/gb_map.rds")
+seatcomp <- read.xlsx("data/mrp_outputs.xlsx", sheet = "SeatComp")
+pub_dat <- readRDS("data/data_for_table.rds")
 
 server <- function(input, output, session) {
- 
- dat <- readRDS("data/megafile.rds")
- map_data <- readRDS("data/megafile_geo.rds")
- my_map <- readRDS("data/gb_map.rds")
- seatcomp <- read.xlsx("data/mrp_outputs.xlsx", sheet = "SeatComp")
  
  # Add a spinner:
  Waiter$new(id = "my_waiter")
@@ -39,13 +40,12 @@ server <- function(input, output, session) {
    
   } else {
    
-   return("Great Britain: Labour Majority 210")
+   return("Great Britain: Labour Majority (210)")
    
   }
  })
  
- 
- # Text explanations
+ ### Text explanations
   # Vote share
   output$vote_share_text <- renderUI({
    
@@ -66,7 +66,7 @@ server <- function(input, output, session) {
               
               tags$br(), tags$br(),
               
-              "The graph below shows the outcome of an MRP model on voting intention in the 632 newly formed constituencies in Great Britain, based on a sample of XXX adults.",
+              "The graph below shows the outcome of an MRP model on voting intention in the 632 newly formed constituencies in Great Britain, based on a sample of 8205 adults.",
               
               tags$br(), tags$br(),
               
@@ -146,10 +146,96 @@ server <- function(input, output, session) {
     
   })
   
-  # 
- 
- 
- # Vote Share Data
+  # Contextual info at the bottom
+  output$contextual_info <- renderUI({
+    
+    tags$div(
+      HTML('<style>
+            .header {
+              font-family: "Public Sans Bold";
+              font-size: 24px;
+              margin-left: 40px;
+            }
+            
+            .body-text {
+              font-family: "Public Sans Thin";
+              font-size: 16px;
+              margin-left: 40px;
+            }
+          </style>'),
+      
+      tags$br(),
+      tags$br(),
+      
+      tags$div(class = "header", "Get The Data"),
+      
+      tags$br(),
+      
+      tags$div(class = "body-text", 
+               
+               "Survation partnered with Lodestone Communications to conduct a poll of 6,170 adults on their voting intentions and topical issues.",
+               
+               HTML("We carried out MRP modelling to analyse the results of the poll for each of the 632 parliamentary constituencies
+                   in Great Britain, based on boundaries for the 2024 General Election."),
+               
+               tags$br(), tags$br(),
+               
+               HTML("For the voting intention, we oversampled from a number of harder to reach seats in order to provide accurate estimates."),
+               
+               tags$br(), tags$br(),
+               
+               HTML("You can download the data in accessible format from our archive."),
+               
+               tags$br(), tags$br(),
+               
+               HTML("<i>Survation is a Market Research Society company partner. Survation is a  member of the British Polling Council and abides by its rules.</i>"),
+               
+               tags$br(),
+               
+               HTML("<i>Survation Ltd Registered in England & Wales Number 07143509</i>"),
+               
+               tags$br(), tags$br()
+      )
+    )
+    
+  })
+  
+  # Explain the policy table
+  output$table_explanation <- renderUI({
+    
+    tags$div(
+      HTML('<style>
+            .header {
+              font-family: "Public Sans Bold";
+              font-size: 24px;
+              margin-left: 5px;
+              margin-top: 20px;
+            }
+            
+            .body-text {
+              font-family: "Public Sans Thin";
+              font-size: 16px;
+              margin-left: 5px;
+            }
+          </style>'),
+      
+      tags$div(class = "header",
+               "Trust on Policies"),
+      
+      tags$br(),
+      
+      tags$div(class = "body-text", 
+               
+               HTML("The table below shows the modelled share of voters who trust Labour more than the Conservatives on a policy area."),
+               
+               tags$br()
+      )
+    )
+    
+  })
+  
+### Plots
+ # Vote Share
  output$vote_share <- renderPlot({
   
   waiter::Waiter$new(id = "vote_share", html = spin_inner_circles())$show()
@@ -232,7 +318,7 @@ server <- function(input, output, session) {
   
  })
  
- #### Propensity to Vote Plot
+ # Propensity to Vote Plot
  output$propensity_to_vote <- renderPlot({
   
   waiter::Waiter$new(id = "propensity_to_vote", html = spin_inner_circles())$show()
@@ -490,8 +576,6 @@ server <- function(input, output, session) {
   
  })
  
- 
- 
  # Top 3 Issues Plot
  output$top_issues <- renderPlot({
   
@@ -569,7 +653,7 @@ server <- function(input, output, session) {
          panel.background = element_rect(fill = "#E0E2DA"),
          plot.background = element_rect(fill = "#E0E2DA", color=NA),
          axis.text.y = element_text(hjust = 0.5, margin = margin(t = 0, r = 10, b = 0, l = 0), face = "bold.italic", size = 12),
-         plot.margin = margin(1, 1, 1, -1)  # Adjust the left margin; here, -1 removes space
+         plot.margin = margin(1, 1, 1, -1)
    ) +
    
    scale_y_continuous(limits = c(0, max(issue_df$values) + 5), expand = c(0, 0))
@@ -577,7 +661,6 @@ server <- function(input, output, session) {
   }
   
  })
- 
  
  # Economy Output
  output$economy <- renderUI({
@@ -591,13 +674,13 @@ server <- function(input, output, session) {
   if (nrow(df) == 0) return()
   
   tagList(
-   div(style = "text-align: center; margin-top: 50px; font-family: Public Sans Bold;",  # Moved the whole field down
+   div(style = "text-align: center; margin-top: 50px; font-family: Public Sans Bold;", 
        div(style = "width: 100px; height: 100px; border-radius: 50%; background-color: #0087DC; position: relative; margin: 0 auto;",  # Circle div
            div(style = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white;",
                paste0(round(as.numeric(df$q1_mean)), "%")
            )
        ),
-       div(style = "margin-top: 40px; font-size: 16px",  # Separated the text under the circle
+       div(style = "margin-top: 40px; font-size: 16px",
            tags$em(" of voters in ", df$PCON25NM, " believe that the "),
            tags$b("economy will get worse in the next year."),
            br(),
@@ -678,9 +761,9 @@ server <- function(input, output, session) {
   
   ggplot(mission_df, aes(x = reorder(missions, mission_values), y = mission_values)) +
    
-   geom_bar(size = 0.002, width = 0.6, stat = "identity", position = "identity", fill = '#DC241F', colour = "#DC241F") +
+   geom_bar(size = 0.02, width = 0.6, stat = "identity", position = "identity", fill = '#DC241F', colour = "#DC241F") +
    
-   geom_text(aes(label = sprintf("%.0f", mission_values)), vjust = 0.5, hjust = 1.5, colour = "white", fontface = "bold", size = 5) +
+   geom_text(aes(label = sprintf("%.0f", mission_values)), vjust = 0.5, hjust = 1.5, colour = "white", fontface = "bold", size = 8) +
    
    coord_flip() +
    
@@ -695,7 +778,7 @@ server <- function(input, output, session) {
          panel.background = element_rect(fill = "#E0E2DA"),
          plot.background = element_rect(fill = "#E0E2DA", color=NA),
          # plot.margin = margin(1, 1, 1, 50, "pt"),  # Adjust this line for plot margins
-         axis.text.y = element_markdown(size = 12, face = "italic", hjust = 0, margin = margin(0, 50, 0, 0, "pt"), family = "Public Sans Thin"),
+         axis.text.y = element_markdown(size = 14, face = "italic", hjust = 0, margin = margin(0, 50, 0, 0, "pt"), family = "Public Sans Thin"),
          plot.margin = margin(1, 1, 1, -2))
   
   } else {
@@ -743,9 +826,9 @@ server <- function(input, output, session) {
    
    ggplot(mission_df, aes(x = reorder(missions, mission_values), y = mission_values)) +
     
-    geom_bar(size = 0.002, width = 0.6, stat = "identity", position = "identity", fill = '#DC241F', colour = "#DC241F") +
+    geom_bar(size = 0.02, width = 0.6, stat = "identity", position = "identity", fill = '#DC241F', colour = "#DC241F") +
     
-    geom_text(aes(label = sprintf("%.0f", mission_values)), vjust = 0.5, hjust = 1.5, colour = "white", fontface = "bold", size = 5) +
+    geom_text(aes(label = sprintf("%.0f", mission_values)), vjust = 0.5, hjust = 1.5, colour = "white", fontface = "bold", size = 8) +
     
     coord_flip() +
     
@@ -760,7 +843,7 @@ server <- function(input, output, session) {
           panel.background = element_rect(fill = "#E0E2DA"),
           plot.background = element_rect(fill = "#E0E2DA", color=NA),
           # plot.margin = margin(1, 1, 1, 0, "pt"),  # Adjust this line for plot margins
-          axis.text.y = element_markdown(size = 12, face = "italic", hjust = 0, margin = margin(0, 10, 0, 0, "pt"), family = "Public Sans Thin"),
+          axis.text.y = element_markdown(size = 14, face = "italic", hjust = 0, margin = margin(0, 10, 0, 0, "pt"), family = "Public Sans Thin"),
           plot.margin = margin(1, 1, 1, -2))
    
   }
@@ -803,18 +886,32 @@ server <- function(input, output, session) {
   
   policy_df <- data.frame(policy_names, policy_values)
   
-  # datatable(policy_df, options = list(
-  #  paging = FALSE, 
-  #  searching = FALSE),
-  #  class = 'cell-border stripe hover',
-  #  rownames = FALSE
-  # ) %>% formatStyle(
-  #  'policy_values',
-  #  backgroundColor = styleColorBar(range(policy_df$policy_values), 'red')
-  # )
+  policy_df <- policy_df |> 
+    arrange(desc(policy_values))
   
-  formattable(policy_df, list(
-   policy_values = color_bar("red")))
+  gt(policy_df) %>%
+    # tab_header(title = "Who do voters trust more on policies?") %>%
+    cols_label(
+      policy_values = "Share",
+      policy_names = "Policy area"
+    ) %>%
+    fmt_number(
+      columns = c(policy_values),
+      decimals = 0,
+      suffixing = TRUE
+    ) %>%
+    fmt(
+      columns = c(policy_values),
+      fns = function(x) {
+        ifelse(
+          x > 50,
+          paste0("<span style='color: #DC241F'>", round(x), "%</span>"),
+          paste0("<span style='color: #0087DC'>", round(x), "%</span>")
+        )
+      }
+    ) |> 
+    tab_options(
+      table.background.color = "#E0E2DA")
   
   } else {
    
@@ -844,23 +941,13 @@ server <- function(input, output, session) {
    
    policy_df <- data.frame(policy_names, policy_values)
    
-   # datatable(policy_df, options = list(
-   #  paging = FALSE, 
-   #  searching = FALSE),
-   #  class = 'cell-border stripe hover',
-   #  rownames = FALSE
-   # ) %>% formatStyle(
-   #  'policy_values',
-   #  backgroundColor = styleColorBar(range(policy_df$policy_values), 'red')
-   # )
-   
    policy_df <- policy_df |> 
     arrange(desc(policy_values))
 
    gt(policy_df) %>%
-    tab_header(title = "Who do voters trust more on policies?") %>%
+    # tab_header(title = "Who do voters trust more on policies?") %>%
      cols_label(
-       policy_values = "Share of constituency",
+       policy_values = "Share",
        policy_names = "Policy area"
      ) %>%
     fmt_number(
@@ -885,7 +972,6 @@ server <- function(input, output, session) {
   }
   
  })
- 
  
  # Update the Leaflet map based on the selected constituency
  output$uk_map <- renderLeaflet({
@@ -914,90 +1000,35 @@ server <- function(input, output, session) {
   
  })
  
- output$contextual_info <- renderUI({
+### Data Explorer
+ output$ziptable <- DT::renderDataTable({
+   # Get the selected columns from input, if none are selected, show all
+   selected_columns <- input$columns_to_show
+   if (is.null(selected_columns)) {
+     selected_columns <- colnames(pub_dat)
+   }
    
-   tags$div(
-     HTML('<style>
-            .header {
-              font-family: "Public Sans Bold";
-              font-size: 24px;
-              margin-left: 40px;
-            }
-            
-            .body-text {
-              font-family: "Public Sans Thin";
-              font-size: 16px;
-              margin-left: 40px;
-            }
-          </style>'),
-     
-     tags$br(),
-     tags$br(),
-     
-     tags$div(class = "header", "Get The Data"),
-     
-     tags$br(),
-     
-     tags$div(class = "body-text", 
-              
-              "Survation partnered with Lodestone Communications to conduct a poll of 6,170 adults on their voting intentions and topical issues.",
-              
-              HTML("We carried out MRP modelling to analyse the results of the poll for each of the 632 parliamentary constituencies
-                   in Great Britain, based on boundaries for the 2024 General Election."),
-              
-              tags$br(), tags$br(),
-              
-              HTML("For the voting intention, we oversampled from a number of harder to reach seats in order to provide accurate estimates."),
-              
-              tags$br(), tags$br(),
-              
-              HTML("You can download the data in accessible format from our archive."),
-              
-              tags$br(), tags$br(),
-              
-              HTML("<i>Survation is a Market Research Society company partner. Survation is a  member of the British Polling Council and abides by its rules.</i>"),
-              
-              tags$br(),
-              
-              HTML("<i>Survation Ltd Registered in England & Wales Number 07143509</i>"),
-              
-              tags$br(), tags$br()
-     )
-   )
+   # Filter data
+   if (input$country == "Great Britain") {
+     df <- pub_dat |> 
+       select(all_of(selected_columns)) |> 
+       arrange(PCON25NM)
+   } else {
+     df <- pub_dat |> 
+       filter(country == input$country) |> 
+       select(all_of(selected_columns)) |> 
+       arrange(PCON25NM)
+   }
    
+   return(DT::datatable(df))
  })
  
- output$table_explanation <- renderUI({
-   
-   tags$div(
-     HTML('<style>
-            .header {
-              font-family: "Public Sans Bold";
-              font-size: 24px;
-              margin-left: 5px;
-            }
-            
-            .body-text {
-              font-family: "Public Sans Thin";
-              font-size: 16px;
-              margin-left: 5px;
-            }
-          </style>'),
-     
-     tags$div(class = "header",
-              "Trust on Policies"),
-     
-     tags$br(),
-     
-     tags$div(class = "body-text", 
-              
-              HTML("The table below shows the modelled share of voters who trust Labour more than the Conservatives on a policy area."),
-              
-              tags$br()
-     )
-   )
-   
- })
  
+ output$downloadDataC <- downloadHandler(
+   filename <- "mrp_dataset.csv",
+   content = function(file) {
+     write.csv(pub_dat, file,
+               row.names = FALSE)
+   })
  
 }

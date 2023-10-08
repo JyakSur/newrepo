@@ -15,6 +15,7 @@ require(gt)
  dat <- readRDS("data/megafile.rds")
  map_data <- readRDS("data/megafile_geo.rds")
  my_map <- readRDS("data/gb_map.rds")
+ pub_dat <- readRDS("data/data_for_table.rds")
 
 ui <- tagList(
     navbarPage(title=HTML(paste0("<i>Survation x Lodestone MRP Dashboard</i>")), windowTitle = "MRP Dashboard",
@@ -108,15 +109,33 @@ ui <- tagList(
                             
                             
                             fluidRow(
-                                column(4, uiOutput("contextual_info")),
-                                column(5, plotOutput("labour_missions", height = 700, width = "100%")),
-                                column(3, 
+                                column(4, tags$div(style = "margin-top: 60px; margin-bottom: 10px;", 
+                                                   uiOutput("contextual_info"))),
+                                column(5, tags$div(style = "margin-top: 30px; margin-bottom: 10px;", 
+                                                   plotOutput("labour_missions", height = 550, width = "100%"))),
+                                column(3, tags$div(style = "margin-top: 30px; margin-bottom: 10px;",
                                        uiOutput("table_explanation"),
-                                       gt_output("policy_areas")))
+                                       gt_output("policy_areas"))))
                         )
                ),
                
-               tabPanel("Data Playground"),
+               tabPanel("Data explorer",
+                        fluidPage(fluidRow(
+                            column(2,
+                                   selectInput("country", "Country", choices = list(
+                                       "Great Britain" = "Great Britain",
+                                       "Nations" = sort(unique(pub_dat$country))
+                                   ),
+                                               multiple=FALSE)
+                            ),
+                            column(2,
+                                   selectInput("columns_to_show", "Filter Columns:", choices = colnames(pub_dat), multiple = TRUE))
+                        ),
+                        hr(),
+                        DT::dataTableOutput("ziptable"),
+                        inputPanel(
+                            downloadButton('downloadDataC', 'Download'))
+                        )),
                
                tabPanel("What is MRP?",
                         
